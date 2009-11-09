@@ -8,7 +8,7 @@ if (  eregi('192.168.0.', $_SERVER["REMOTE_ADDR"] && "extern" != $_GET['view']){
 /* ********************************************************************************
 	Visualisation of Geocachingpoints out of a .loc file
 	JavaScript only implementation, inspired and API conform from GMAPLOC http://www.henning-mersch.de/projects.html
-	Loc2Map Version: 1.0.0
+	Loc2Map Version: 1.0.1
 	for new version visit http://www.katur.de/
 	
 	Copyright (c) 2009, Holger Jeromin <jeromin(at)hitnet.rwth-aachen.de>
@@ -21,6 +21,8 @@ if (  eregi('192.168.0.', $_SERVER["REMOTE_ADDR"] && "extern" != $_GET['view']){
 	--------
 	02-Oktober-2009			V1.0.0
 		-	File created
+	09-November-2009		V1.0.1
+		-	Anpassung für iPhone und Opera Mobile
 
 */
 
@@ -36,6 +38,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 	<head>
 		<meta http-equiv="Content-Style-Type" content="text/css" />
 		<meta http-equiv="Content-Script-Type" content="text/javascript" />
+		<meta name="viewport" content="width = device-width, height = device-height" />
 		<link type="image/x-icon" href="favicon.ico" rel="shortcut icon"/>
 		<title>loc2map by Holger Jeromin</title>
 		<script src="http://maps.google.com/maps?v=2&amp;file=api&amp;key=<?php echo $gmapkey?>" type="text/javascript"></script>
@@ -468,12 +471,6 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 			var newwidth;
 			
 			//check if size is preconfigured. If not than autodetect
-			if (Parameter_Liste.widthLegend !== undefined)
-			{
-				widthLegend=Parameter_Liste.widthLegend;
-			}else{
-				widthLegend=200;
-			}
 			if (Parameter_Liste.height !== undefined){
 				newheight = Parameter_Liste.height;
 				newmenuheight = Parameter_Liste.height;
@@ -494,6 +491,14 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 			}else if (document.documentElement.clientWidth){
 				//IE DOM
 				newwidth = document.documentElement.clientWidth;
+			}
+			if (Parameter_Liste.widthLegend !== undefined)
+			{
+				widthLegend=Parameter_Liste.widthLegend;
+			}else if(newwidth < 800){
+				widthLegend = newwidth / 4;
+			}else{
+				widthLegend=200;
 			}
 			
 			//set new size and position of all elements
