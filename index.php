@@ -8,10 +8,10 @@ if (  eregi('192.168.0.', $_SERVER["REMOTE_ADDR"] && "extern" != $_GET['view']){
 /* ********************************************************************************
 	Visualisation of Geocachingpoints out of a .loc file
 	JavaScript only implementation, inspired and API conform from GMAPLOC http://www.henning-mersch.de/projects.html
-	Loc2Map Version: 1.0.1
+	Loc2Map Version: 1.0.2
 	for new version visit http://www.katur.de/
 	
-	Copyright (c) 2009, Holger Jeromin <jeromin(at)hitnet.rwth-aachen.de>
+	Copyright (c) 2010, Holger Jeromin <jeromin(at)hitnet.rwth-aachen.de>
 	
 	This software is distributed under a Creative Commons Attribution-Noncommercial 3.0 License
 	http://creativecommons.org/licenses/by-nc/3.0/de/
@@ -22,8 +22,9 @@ if (  eregi('192.168.0.', $_SERVER["REMOTE_ADDR"] && "extern" != $_GET['view']){
 	02-Oktober-2009			V1.0.0
 		-	File created
 	09-November-2009		V1.0.1
-		-	Anpassung für iPhone und Opera Mobile
-
+		-	Adjusting for iPhone and Opera Mobile
+	15-Juli-2010		V1.0.2
+		-	Using the W3C Geolocation API
 */
 
 //This is the google maps key, default is for www.sklinke.de
@@ -70,6 +71,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 				<img alt="" src="blue.png"/>(<span id="CountFoundHolger">0</span>): Holger,
 				<img alt="" src="green.png"/>(<span id="CountFoundBoth">0</span>): both
 				<?php if ($internview === true){ echo '(<a href="admin.php">Adminlink</a>)'; } ?>
+				<span id="idCenterMapLink"></span>
 			</div>
 		</div>
 	<script type="text/javascript">
@@ -512,6 +514,60 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 		
 		//needed for using page with firebug debugging
 		function gtbExternal() { };
+		
+		if (typeof(navigator.geolocation) != "undefined"){
+			var node = document.createElement("input");
+			node.type = "button";
+			node.value = "Center here";
+			node.onclick = function(evt){
+				navigator.geolocation.getCurrentPosition(GCcenterMap);
+			}
+			if (document.getElementById("idCenterMapLink") !== null){
+				document.getElementById("idCenterMapLink").appendChild(node);
+			}
+		}
+		function GCcenterMap(position){
+			var here = new GLatLng(
+					position.coords.latitude,
+					position.coords.longitude);
+			gmap.setCenter(here);
+			
+			/*
+			var circlePoints = Array();
+			var bounds = new GLatLngBounds();
+			var circle;
+			var d = 1000*position.coords.accuracy/6378.8;
+			var lat1 = (Math.PI/180)* here.lat(); // radians
+			var lng1 = (Math.PI/180)* here.lng(); // radians
+
+			for (var a = 0 ; a < 361 ; a++ ) {
+				var tc = (Math.PI/180)*a;
+				var y = Math.asin(Math.sin(lat1)*Math.cos(d)+Math.cos(lat1)*Math.sin(d)*Math.cos(tc));
+				var dlng = Math.atan2(Math.sin(tc)*Math.sin(d)*Math.cos(lat1),Math.cos(d)-Math.sin(lat1)*Math.sin(y));
+				var x = ((lng1-dlng+Math.PI) % (2*Math.PI)) - Math.PI ; // MOD function
+				var point = new GLatLng(parseFloat(y*(180/Math.PI)),parseFloat(x*(180/Math.PI)));
+				circlePoints.push(point);
+				bounds.extend(point);
+			}
+			
+			if (d < 1.5678565720686044) {
+				circle = new GPolygon(circlePoints, '#000000', 2, 1, '#000000', 0.25);
+			}else {
+				circle = new GPolygon(circlePoints, '#000000', 2, 1);
+			}
+			if (map.getBoundsZoomLevel(bounds) < gmap.getZoom()){
+				map.setZoom(map.getBoundsZoomLevel(bounds));
+			}
+			gmap.addOverlay(circle);
+			*/
+			if (gmap.getZoom() < 15 ){
+				if(window.innerWidth && window.innerWidth < 800){
+					gmap.setZoom(16);
+				}else{
+					gmap.setZoom(15);
+				}
+			}
+		}
 	/* ]]> */
 	</script>
 </body>
