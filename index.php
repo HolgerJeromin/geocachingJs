@@ -8,7 +8,7 @@ if (  eregi('192.168.0.', $_SERVER["REMOTE_ADDR"] && "extern" != $_GET['view']){
 /* ********************************************************************************
 	Visualisation of Geocachingpoints out of a .loc file
 	JavaScript only implementation, inspired and API conform from GMAPLOC http://www.henning-mersch.de/projects.html
-	Loc2Map Version: 1.0.2
+	Loc2Map Version: 1.0.3
 	for new version visit http://www.katur.de/
 	
 	Copyright (c) 2010, Holger Jeromin <jeromin(at)hitnet.rwth-aachen.de>
@@ -25,6 +25,8 @@ if (  eregi('192.168.0.', $_SERVER["REMOTE_ADDR"] && "extern" != $_GET['view']){
 		-	Adjusting for iPhone and Opera Mobile
 	15-Juli-2010		V1.0.2
 		-	Using the W3C Geolocation API
+	26-August-2010		V1.0.3
+		-	display the accuracy of the location
 */
 
 //This is the google maps key, default is for www.sklinke.de
@@ -532,14 +534,13 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 					position.coords.longitude);
 			gmap.setCenter(here);
 			
-			/*
 			var circlePoints = Array();
 			var bounds = new GLatLngBounds();
 			var circle;
-			var d = 1000*position.coords.accuracy/6378.8;
+			var d = position.coords.accuracy/(1000*6378.8);	// radians
 			var lat1 = (Math.PI/180)* here.lat(); // radians
 			var lng1 = (Math.PI/180)* here.lng(); // radians
-
+			
 			for (var a = 0 ; a < 361 ; a++ ) {
 				var tc = (Math.PI/180)*a;
 				var y = Math.asin(Math.sin(lat1)*Math.cos(d)+Math.cos(lat1)*Math.sin(d)*Math.cos(tc));
@@ -550,17 +551,13 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 				bounds.extend(point);
 			}
 			
-			if (d < 1.5678565720686044) {
-				circle = new GPolygon(circlePoints, '#000000', 2, 1, '#000000', 0.25);
-			}else {
-				circle = new GPolygon(circlePoints, '#000000', 2, 1);
-			}
-			if (map.getBoundsZoomLevel(bounds) < gmap.getZoom()){
-				map.setZoom(map.getBoundsZoomLevel(bounds));
-			}
+			circle = new GPolygon(circlePoints, '#000000', 2, 1, '#000000', 0.15);
+			
 			gmap.addOverlay(circle);
-			*/
-			if (gmap.getZoom() < 15 ){
+			
+			if (gmap.getBoundsZoomLevel(bounds) < 16){
+				gmap.setZoom(gmap.getBoundsZoomLevel(bounds));
+			}else if (gmap.getZoom() < 15 ){
 				if(window.innerWidth && window.innerWidth < 800){
 					gmap.setZoom(16);
 				}else{
