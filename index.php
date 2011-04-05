@@ -8,7 +8,7 @@ if (  eregi('192.168.0.', $_SERVER["REMOTE_ADDR"] && "extern" != $_GET['view']){
 /* ********************************************************************************
 	Visualisation of Geocachingpoints out of a .loc file
 	JavaScript only implementation, inspired and API conform from GMAPLOC http://www.henning-mersch.de/projects.html
-	Loc2Map Version: 1.0.3
+	Loc2Map Version: 1.1.0
 	for new version visit http://www.katur.de/
 	
 	Copyright (c) 2010, Holger Jeromin <jeromin(at)hitnet.rwth-aachen.de>
@@ -27,6 +27,8 @@ if (  eregi('192.168.0.', $_SERVER["REMOTE_ADDR"] && "extern" != $_GET['view']){
 		-	Using the W3C Geolocation API
 	26-August-2010		V1.0.3
 		-	display the accuracy of the location
+	05-April-2011		V1.1.0
+		-	support of Openstreetmap basemap
 */
 
 //This is the google maps key, default is for www.sklinke.de
@@ -158,9 +160,16 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 		//initGM() will be called from onload-event
 		function initGM() {
 			if (GBrowserIsCompatible() && xmlHttp !== null) { 
+				var copyOSM = new GCopyrightCollection("<a href=\"http://www.openstreetmap.org/\">OpenStreetMap</a>");
+				var tilesMapnik = new GTileLayer(copyOSM, 1, 18, {tileUrlTemplate: 'http://tile.openstreetmap.org/{Z}/{X}/{Y}.png'});
+				var mapMapnik = new GMapType([tilesMapnik], G_NORMAL_MAP.getProjection(), "OSM");
+				
 				//init GoogleMap
-				gmap = new GMap2(document.getElementById("geocachingmap")); // create map
-				gmap.setCenter(new GLatLng(0,0), 13, G_HYBRID_MAP);
+				gmap = new GMap2(document.getElementById("geocachingmap"), { mapTypes: [mapMapnik] }); // create map
+				gmap.addMapType(G_NORMAL_MAP);
+				gmap.addMapType(G_SATELLITE_MAP);
+				gmap.addMapType(G_HYBRID_MAP);
+				gmap.setCenter(new GLatLng(0,0), 13);
 				gmap.addControl(new GMapTypeControl());
 				gmap.addControl(new GLargeMapControl());
 				gmap.addControl(new GScaleControl());
@@ -415,6 +424,9 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 					GEvent.trigger(
 						AllCacheMarkers[this.getAttribute('counttr')],
 						'click');
+					//prevent marking of text
+					evt.cancelBubble = true;
+					if (evt.stopPropagation) evt.stopPropagation();
 				};
 				//ondouble click centers and zooms to the marker
 				MenuTR.ondblclick = function(evt){
