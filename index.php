@@ -1,5 +1,5 @@
 <?php
-if (  eregi('192.168.0.', $_SERVER["REMOTE_ADDR"] && "extern" != $_GET['view']){
+if ( eregi('192.168.0.', $_SERVER["REMOTE_ADDR"]) && "extern" != $_GET['view']){
 	$internview = true;
 }else{
 	$internview = false;
@@ -8,10 +8,10 @@ if (  eregi('192.168.0.', $_SERVER["REMOTE_ADDR"] && "extern" != $_GET['view']){
 /* ********************************************************************************
 	Visualisation of Geocachingpoints out of a .loc file
 	JavaScript only implementation, inspired and API conform from GMAPLOC http://www.henning-mersch.de/projects.html
-	Loc2Map Version: 1.1.0
+	Loc2Map Version: 1.1.1
 	for new version visit http://www.katur.de/
 	
-	Copyright (c) 2010, Holger Jeromin <jeromin(at)hitnet.rwth-aachen.de>
+	Copyright (c) 2011, Holger Jeromin <jeromin(at)hitnet.rwth-aachen.de>
 	
 	This software is distributed under a Creative Commons Attribution-Noncommercial 3.0 License
 	http://creativecommons.org/licenses/by-nc/3.0/de/
@@ -19,16 +19,18 @@ if (  eregi('192.168.0.', $_SERVER["REMOTE_ADDR"] && "extern" != $_GET['view']){
 	
 	History:
 	--------
-	02-Oktober-2009			V1.0.0
+	02-October-2009			V1.0.0
 		-	File created
 	09-November-2009		V1.0.1
 		-	Adjusting for iPhone and Opera Mobile
-	15-Juli-2010		V1.0.2
+	15-July-2010		V1.0.2
 		-	Using the W3C Geolocation API
 	26-August-2010		V1.0.3
 		-	display the accuracy of the location
 	05-April-2011		V1.1.0
 		-	support of Openstreetmap basemap
+	15-October-2011		V1.1.1
+		-	better error reporting
 */
 
 //This is the google maps key, default is for www.sklinke.de
@@ -43,7 +45,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 	<head>
 		<meta http-equiv="Content-Style-Type" content="text/css" />
 		<meta http-equiv="Content-Script-Type" content="text/javascript" />
-		<meta name="viewport" content="width = device-width, height = device-height" />
+		<meta name="viewport" content="width=device-width, height=device-height, target-densitydpi=device-dpi" />
 		<link type="image/x-icon" href="favicon.ico" rel="shortcut icon"/>
 		<title>loc2map by Holger Jeromin</title>
 		<script src="http://maps.google.com/maps?v=2&amp;file=api&amp;key=<?php echo $gmapkey?>" type="text/javascript"></script>
@@ -160,7 +162,10 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 		//initGM() will be called from onload-event
 		function initGM() {
 			if (GBrowserIsCompatible() && xmlHttp !== null) { 
-				var copyOSM = new GCopyrightCollection("<a href=\"http://www.openstreetmap.org/\">OpenStreetMap</a>");
+				var copyright = new GCopyright(1, new GLatLngBounds(new GLatLng(-90,-180), new GLatLng(90,180)),0,'(<a rel="license" href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>)');
+				var copyOSM =	new GCopyrightCollection('Kartendaten &copy; <a href="http://www.openstreetmap.org/">OpenStreetMap</a> Contributors');
+				copyOSM.addCopyright(copyright);
+
 				var tilesMapnik = new GTileLayer(copyOSM, 1, 18, {tileUrlTemplate: 'http://tile.openstreetmap.org/{Z}/{X}/{Y}.png'});
 				var mapMapnik = new GMapType([tilesMapnik], G_NORMAL_MAP.getProjection(), "OSM");
 				
@@ -364,7 +369,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 				//check if the cache name is standardconform
 				if (CacheDescriptionParts.length === 1){
 					//for example "NearbyWater"
-					alert('Error, wrong syntax of CacheName in XML. ID:'+CacheID+" cacheName: "+CacheDescription);
+					window.alert('Error, wrong syntax of CacheName in XML. Missing cache owner (string " by "). ID:'+CacheID+" cacheName: "+CacheDescription);
 				}else if (CacheDescriptionParts.length == 2){
 					//"NearbyWater I by BlueSheep"
 					CacheText += "von <i>"+CacheDescriptionParts[1]+"</i>";
