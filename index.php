@@ -1,9 +1,5 @@
 <?php
-if ( eregi('192.168.0.', $_SERVER["REMOTE_ADDR"]) && "extern" != $_GET['view']){
-	$internview = true;
-}else{
-	$internview = false;
-}
+require('/var/www/sabineholgeraccess.php');
 
 /* ********************************************************************************
 	Visualisation of Geocachingpoints out of a .loc file
@@ -432,6 +428,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 					//prevent marking of text
 					evt.cancelBubble = true;
 					if (evt.stopPropagation) evt.stopPropagation();
+					if (evt.preventDefault) evt.preventDefault();
 				};
 				//ondouble click centers and zooms to the marker
 				MenuTR.ondblclick = function(evt){
@@ -443,6 +440,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 					//prevent marking of text
 					evt.cancelBubble = true;
 					if (evt.stopPropagation) evt.stopPropagation();
+					if (evt.preventDefault) evt.preventDefault();
 				};
 				
 				//first cell contains the icon
