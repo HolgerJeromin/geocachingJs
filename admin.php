@@ -23,8 +23,10 @@ $requireTeamFind = "false";		//has to be a string
 	
 	History:
 	--------
-	03-Oktober-2009			V1.0.0
+	03-October-2009			V1.0.0
 		-	File created
+	25-October-2011			V1.0.1
+		-	better explanation
 
 */
 
@@ -123,9 +125,9 @@ if (isset($_POST["cacheid"]) && empty($_POST["cacheid"])){
 }else{
 ?>
 		<h1>Admintool for loc2map</h1>
-		<p>Please copy the content of the <span 
+		<p>Please visit the cache detail site on <a href="http://geocaching.com">geocaching.com</a>. Every Cache have a Link named <span 
 		style="border:1px outset #C0C0C0;font-family:verdana;font-size:11px;padding-top:2px;padding-right:7px;padding-bottom:2px;padding-left:7px;background-color:#D4D0C8;font-size:10.6667px;font-weight:400;"
-		>LOC Waypoint File</span> which is downloadable from the Geocaching webpage into the textfield. </p>
+		>LOC Waypoint File</span>. Download the file and paste the content into the textfield:</p>
 		<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" onsubmit="return preparedata();">
 			<div>
 				<textarea name="idlocxmldata" id="idlocxmldata" cols="140" rows="15" onblur="preparedata()"></textarea>
