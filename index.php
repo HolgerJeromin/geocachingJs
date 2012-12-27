@@ -3,11 +3,11 @@ require('/var/www/sabineholgeraccess.php');
 
 /* ********************************************************************************
 	Visualisation of Geocachingpoints out of a .loc file
-	JavaScript only implementation, inspired and API conform from GMAPLOC http://www.henning-mersch.de/projects.html
-	Loc2Map Version: 1.1.1
+	JavaScript only implementation, inspired and API conform from GMAPLOC http://www.henning-mersch.de/projects_former
+	Loc2Map Version: 2.0.0
 	for new version visit http://www.katur.de/
 	
-	Copyright (c) 2011, Holger Jeromin <jeromin(at)hitnet.rwth-aachen.de>
+	Copyright (c) 2012, Holger Jeromin <jeromin(at)hitnet.rwth-aachen.de>
 	
 	This software is distributed under a Creative Commons Attribution-Noncommercial 3.0 License
 	http://creativecommons.org/licenses/by-nc/3.0/de/
@@ -27,11 +27,15 @@ require('/var/www/sabineholgeraccess.php');
 		-	support of Openstreetmap basemap
 	15-October-2011		V1.1.1
 		-	better error reporting
+	27-December-2012		V2.0.0
+		-	ported to leaflet with many new features
+		- Needed:
+			js+css from https://github.com/danzel/Leaflet.markercluster
+			js+css+png from https://github.com/kartena/Leaflet.zoomslider
+			js from https://github.com/seelmann/leaflet-providers
+			js for tile layer bing and google from https://github.com/shramov/leaflet-plugins
+			js for permalink from https://github.com/shramov/leaflet-plugins
 */
-
-//This is the google maps key, default is for www.sklinke.de
-//$gmapkey = isset($_GET['gmapkey'])?$_GET['gmapkey']:'ABQIAAAAtkatt47Y0Sqm3_HAhu5P0hQKFtqXg7fvovgtrsWMi0FGR5r5fhQCwu7POfUVie-OhzgjrBcz4Y87sg'; 
-$gmapkey = isset($_GET['gmapkey'])?$_GET['gmapkey']:'ABQIAAAAtkatt47Y0Sqm3_HAhu5P0hQKFtqXg7fvovgtrsWMi0FGR5r5fhQCwu7POfUVie-OhzgjrBcz4Y87sg'; 
 
 echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 ?>
@@ -41,12 +45,26 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 	<head>
 		<meta http-equiv="Content-Style-Type" content="text/css" />
 		<meta http-equiv="Content-Script-Type" content="text/javascript" />
-		<meta name="viewport" content="width=device-width, height=device-height, target-densitydpi=device-dpi" />
+		<meta name="viewport" content="width=device-width, height=device-height, target-densitydpi=device-dpi, initial-scale=1.0, user-scalable=no" />
 		<link type="image/x-icon" href="favicon.ico" rel="shortcut icon"/>
 		<title>loc2map by Holger Jeromin</title>
-		<script src="http://maps.google.com/maps?v=2&amp;file=api&amp;key=<?php echo $gmapkey?>" type="text/javascript"></script>
+		<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.css" />
+		<link rel="stylesheet" href="leaflet.markercluster.css" />
+		<link rel="stylesheet" href="leaflet-control-Zoomslider.css" />
+		<!--[if lte IE 8]>
+			<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.ie.css" />
+			<link rel="stylesheet" href="leaflet-control-Zoomslider.ie.css" />
+		<![endif]-->
+		<script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
+		<script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script>
+		<script src="leaflet.markercluster-src.js"></script>
+		<script src="leaflet-providers-0.0.2.js"></script>
+		<script src="leaflet-layer-google.js"></script>
+		<script src="leaflet-layer-bing.js"></script>
+		<script src="leaflet-control-permalink.js"></script>
+		<script src="leaflet-control-Zoomslider.js" ></script>
 	</head>
-	<body style="padding:0;margin:0;" onload="initGM()" >
+	<body style="padding:0;margin:0;" onload="initmap()" >
 		<div id="geocachingmenu" style="width: 180px; height:500px; float:right;font-size:small;overflow-x:hidden;overflow-y:auto;">
 			<table style="padding:0px;" id="geocachingmenutable"><tbody>
 				<tr>
@@ -59,7 +77,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 		<div id="geocachingmap" style="width: 750px; height:500px;"></div>
 		<!-- crosshair makes a funny empty space on the left side. but better than on the right or middle -->
 		<div>
-			<img id="crosshair" style="float:left;position:relative; top:-322px; left:292px;" src="crshair.gif" alt="" width="18" height="18" class="gmnoprint" />
+			<img id="crosshair" style="float:left;position:relative; top:-322px; left:292px;" src="crshair.gif" alt="" width="18" height="18" />
 		</div>
 		<div id="stats" style="display:none;">
 			<div style="float:right;padding:0;margin:0px;">
@@ -107,8 +125,9 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 			wert = paare[i].substring(paare[i].indexOf("=")+1, paare[i].length);
 			Parameter_Liste[name] = wert;
 		}
-		delete paare;
-		delete wertestring;
+		paare = null;
+		wert = null;
+		wertestring = null;
 		
 		if (Parameter_Liste.title !== undefined){
 			document.title=Parameter_Liste.title;
@@ -138,6 +157,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 		var CacheLonMin = Number.NaN;
 		var CacheLonMax = Number.NaN;
 		
+		var markerCluster = null;
 		//build tbody element with table header to append menulist entrys later
 		//do not work in browser DOM for speed
 		var geocachingmenutable = document.getElementById('geocachingmenutable');
@@ -155,64 +175,55 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 		MenuTR.appendChild(MenuTD);
 		newgeocachingmenutablebody.appendChild(MenuTR);
 		
-		//initGM() will be called from onload-event
-		function initGM() {
-			if (GBrowserIsCompatible() && xmlHttp !== null) { 
-				var copyright = new GCopyright(1, new GLatLngBounds(new GLatLng(-90,-180), new GLatLng(90,180)),0,'(<a rel="license" href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>)');
-				var copyOSM =	new GCopyrightCollection('Kartendaten &copy; <a href="http://www.openstreetmap.org/">OpenStreetMap</a> Contributors');
-				copyOSM.addCopyright(copyright);
-
-				var tilesMapnik = new GTileLayer(copyOSM, 1, 18, {tileUrlTemplate: 'http://tile.openstreetmap.org/{Z}/{X}/{Y}.png'});
-				var mapMapnik = new GMapType([tilesMapnik], G_NORMAL_MAP.getProjection(), "OSM");
-				
-				//init GoogleMap
-				gmap = new GMap2(document.getElementById("geocachingmap"), { mapTypes: [mapMapnik] }); // create map
-				gmap.addMapType(G_NORMAL_MAP);
-				gmap.addMapType(G_SATELLITE_MAP);
-				gmap.addMapType(G_HYBRID_MAP);
-				gmap.setCenter(new GLatLng(0,0), 13);
-				gmap.addControl(new GMapTypeControl());
-				gmap.addControl(new GLargeMapControl());
-				gmap.addControl(new GScaleControl());
-				gmap.enableScrollWheelZoom();
+		
+		//initmap() will be called from onload-event
+		function initmap() {
+			if (true) { 
+				map = L.map('geocachingmap');
+				markercluster = new L.MarkerClusterGroup({maxClusterRadius:10, disableClusteringAtZoom:11});
 				
 				/******************************************************************************
-					initialize four GIcons
+					initialize four Icons
 				*******************************************************************************/
-				iconGreen = new GIcon();
-				iconGreen.image = 'green.png';
-				iconGreen.shadow = 'shadow.png';
-				iconGreen.shadowSize = new GSize(22, 20);
-				iconGreen.iconSize = new GSize(12,20);
-				iconGreen.iconAnchor = new GPoint(6, 20);
-				iconGreen.infoWindowAnchor = new GPoint(8, 8);
+				iconGreen = L.icon({
+					iconUrl: 'green.png',
+					iconSize: [12, 20],
+					iconAnchor: [6, 20],
+					popupAnchor: [8, 8],
+					shadowUrl: 'shadow.png',
+					shadowSize: [22, 20],
+				});
 				markerGreenOption = { icon:iconGreen };
 				
-				iconBlue = new GIcon();
-				iconBlue.image = 'blue.png';
-				iconBlue.shadow = 'shadow.png';
-				iconBlue.shadowSize = new GSize(22, 20);
-				iconBlue.iconSize = new GSize(12,20);
-				iconBlue.iconAnchor = new GPoint(6, 20);
-				iconBlue.infoWindowAnchor = new GPoint(8, 8);
+				iconBlue = L.icon({
+					iconUrl: 'blue.png',
+					iconSize: [12, 20],
+					iconAnchor: [6, 20],
+					popupAnchor: [8, 8],
+					shadowUrl: 'shadow.png',
+					shadowSize: [22, 20],
+				});
 				markerBlueOption = { icon:iconBlue };
 				
-				iconRed = new GIcon();
-				iconRed.image = 'red.png';
-				iconRed.shadow = 'shadow.png';
-				iconRed.shadowSize = new GSize(22, 20);
-				iconRed.iconSize = new GSize(12,20);
-				iconRed.iconAnchor = new GPoint(6, 20);
-				iconRed.infoWindowAnchor = new GPoint(8, 8);
+				iconRed = L.icon({
+					iconUrl: 'red.png',
+					iconSize: [12, 20],
+					iconAnchor: [6, 20],
+					popupAnchor: [8, 8],
+					shadowUrl: 'shadow.png',
+					shadowSize: [22, 20],
+				});
+
 				markerRedOption = { icon:iconRed };
 				
-				iconYellow = new GIcon();
-				iconYellow.image = 'yellow.png';
-				iconYellow.shadow = 'shadow.png';
-				iconYellow.shadowSize = new GSize(22, 20);
-				iconYellow.iconSize = new GSize(12,20);
-				iconYellow.iconAnchor = new GPoint(6, 20);
-				iconYellow.infoWindowAnchor = new GPoint(8, 8);
+				iconYellow = L.icon({
+					iconUrl: 'yellow.png',
+					iconSize: [12, 20],
+					iconAnchor: [6, 20],
+					popupAnchor: [8, 8],
+					shadowUrl: 'shadow.png',
+					shadowSize: [22, 20],
+					});
 				markerYellowOption = { icon:iconYellow };
 				
 				/******************************************************************************
@@ -229,7 +240,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 					var locurlXML=xmlHttp.responseXML.documentElement;
 					var locurlWaypoints = locurlXML.getElementsByTagName('waypoint');
 					//call function to insert marker to map
-					insertWaypoints(locurlWaypoints, markerRedOption);
+					insertWaypoints(locurlWaypoints, iconRed);
 				}
 				if (Parameter_Liste.greenlocurl !== undefined){
 					//fetch xml file from greenlocurl
@@ -239,7 +250,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 					var greenlocurlXML=xmlHttp.responseXML.documentElement;
 					var greenlocurlWaypoints = greenlocurlXML.getElementsByTagName('waypoint');
 					//call function to insert marker to map
-					insertWaypoints(locurlWaypoints, markerGreenOption);
+					insertWaypoints(locurlWaypoints, iconGreen);
 				}
 				
 				if (Parameter_Liste.locurl === undefined && Parameter_Liste.greenlocurl === undefined){
@@ -255,7 +266,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 					var HiddenXML=xmlHttp.responseXML.documentElement;
 					var AllWaypointsHidden = HiddenXML.getElementsByTagName('waypoint');
 					//call function to insert marker to map
-					insertWaypoints(AllWaypointsHidden, markerYellowOption);
+					insertWaypoints(AllWaypointsHidden, iconYellow);
 					
 					//unhide stats bar
 					document.getElementById("stats").style.display = "inline";
@@ -277,22 +288,57 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 				
 				//center map via url parameter or calculate center automatically
 				if (CenterCache !== null){
-					gmap.setCenter(CenterCache,13);
+					map.setView(CenterCache, 15);
 				}else{
-					gmap.setCenter(new GLatLng((CacheLatMin+CacheLatMax)/2,(CacheLonMin+CacheLonMax)/2));
-					gmap.setZoom(
-						gmap.getBoundsZoomLevel(
-							new GLatLngBounds(
-								new GLatLng(CacheLatMin,CacheLonMin),
-								new GLatLng(CacheLatMax,CacheLonMax)
-							)
-						)
-					);
+					map.fitBounds([[CacheLatMin, CacheLonMin],[CacheLatMax, CacheLonMax]]);
 				}
+				//Add clustered Markers
+				map.addLayer(markercluster);
+				//build a few tile layers
+				var lOpenStreetMap = L.TileLayer.provider('OpenStreetMap');
+				var lOpenStreetMapDE = L.TileLayer.provider('OpenStreetMap.DE');
+				var lOpenCycleMap = L.TileLayer.provider('OpenCycleMap');
+				var lStamenWater = L.TileLayer.provider('Stamen.Watercolor');
+				var lGoogleRoad = new L.Google("ROADMAP");
+				var lGoogleHybrid = new L.Google("HYBRID");
+				var lGoogleSat = new L.Google("SATELLITE");
+				var lBing = new L.BingLayer("Anqm0F_JjIZvT0P3abS6KONpaBaKuTnITRrnYuiJCE0WOhH6ZbE4DzeT6brvKVR5");
+				//only add one layer to the current map
+				map.addLayer(lOpenStreetMap);
+				//add layer switcher, permalink and scale to the map
+				var layers = new L.Control.Layers( {
+					'OpenStreetMap':lOpenStreetMap,
+					'Google Map':lGoogleRoad,
+					'Google Satellite':lGoogleSat,
+					'Google Hybrid':lGoogleHybrid,
+					'Bing':lBing,
+					'OSM.de':lOpenStreetMapDE,
+					'OpenCycleMap':lOpenCycleMap,
+					'Watercolor':lStamenWater
+					}, {"Caches":markercluster}, {collapsed:true});
+				map.addControl(layers);
+				map.addControl(new L.Control.Permalink({text: 'Permalink', layers: layers}));
+				map.addControl(new L.control.scale({imperial:false}));
 			} else {
 				document.getElementById('geocachingmap').style.backgroundColor = '#DDDDDD';
-				document.getElementById('geocachingmap').innerHTML = 'Sorry, your Google Map cannot be displayed.';
+				document.getElementById('geocachingmap').innerHTML = 'Sorry, the Map cannot be displayed.';
 			}
+			if (typeof(navigator.geolocation) != "undefined"){
+				var node = document.createElement("input");
+				node.type = "button";
+				node.value = "Center here";
+				node.onclick = function(evt){
+					map.locate({setView:true, maxZoom:16});
+				}
+				map.on('locationfound', function(e) {
+					L.circle(e.latlng, e.accuracy).addTo(map);
+				});
+				if (document.getElementById("idCenterMapLink") !== null){
+					document.getElementById("idCenterMapLink").appendChild(node);
+				}
+			}
+			//opera mobile v12 needs this...
+			resizeElements();
 		}
 		
 		/******************************************************************************
@@ -304,7 +350,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 				//
 				var CacheLat = parseFloat(AllWaypoints[i].getElementsByTagName('coord')[0].getAttribute('lat'));
 				var CacheLon = parseFloat(AllWaypoints[i].getElementsByTagName('coord')[0].getAttribute('lon'));
-				var CachePos = new GLatLng(CacheLat,CacheLon);
+				var CachePos = new L.LatLng(CacheLat,CacheLon);
 				
 				//maintain position of all caches to be able to autozoom later
 				if (CacheLat < CacheLatMin){
@@ -337,15 +383,15 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 					CacheFinder = CacheFinder.slice(0, 1).toUpperCase()+CacheFinder.slice(1);
 					if (AllWaypoints[i].getElementsByTagName('teamfind')[0].firstChild.nodeValue == "holger"){
 						CountFoundHolger++;
-						CacheIcon = markerBlueOption;
+						CacheIcon = iconBlue;
 					}else if (AllWaypoints[i].getElementsByTagName('teamfind')[0].firstChild.nodeValue == "sabine"){
 						CountFoundSabine++;
-						CacheIcon = markerRedOption;
+						CacheIcon = iconRed;
 					}
 				}else{
 					if (forceIcon === null){
 						CountFoundBoth++;
-						CacheIcon = markerGreenOption;
+						CacheIcon = iconGreen;
 					}else{
 						CountHidden++;
 						CacheIcon = forceIcon;
@@ -355,7 +401,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 				if (Parameter_Liste.centerWP !== undefined && Parameter_Liste.centerWP.toUpperCase() === CacheID){
 					CenterCache = CachePos;
 					//make the icon yellow
-					CacheIcon = markerYellowOption;
+					CacheIcon = iconYellow;
 				}
 				
 				var CacheText =	"CacheID: "+
@@ -383,11 +429,10 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 				}
 				
 				//build marker with right info and add to the map
-				var CacheMarker = createMarker(CachePos, CacheText, CacheIcon);
-				gmap.addOverlay(CacheMarker);
-				
-				//remember marker for mouseover/click events
+				var CacheMarker = L.marker(CachePos, {icon:CacheIcon, title:CacheID+": "+CacheName});
+				CacheMarker.bindPopup(CacheText);
 				AllCacheMarkers[CountTR] = CacheMarker;
+				markercluster.addLayer(CacheMarker);
 				
 				/******************************************************************************
 					build menu item for marker
@@ -407,37 +452,12 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 				
 				//onmouse over check if marker is visible and open marker if yes
 				MenuTR.onmouseover = function(evt){
-					if (	gmap.getBounds().containsLatLng(
-								new GLatLng(
-									parseFloat(this.getAttribute('CacheLat')),
-									parseFloat(this.getAttribute('CacheLon'))
-								)
-							)
-						)
-					{
-						GEvent.trigger(
-							AllCacheMarkers[this.getAttribute('counttr')],
-							'click');
-					}
-				};
-				//onclick open the marker every time
-				MenuTR.onclick = function(evt){
-					GEvent.trigger(
-						AllCacheMarkers[this.getAttribute('counttr')],
-						'click');
-					//prevent marking of text
-					evt.cancelBubble = true;
-					if (evt.stopPropagation) evt.stopPropagation();
-					if (evt.preventDefault) evt.preventDefault();
+					AllCacheMarkers[this.getAttribute('counttr')].openPopup();
 				};
 				//ondouble click centers and zooms to the marker
 				MenuTR.ondblclick = function(evt){
-					gmap.setCenter(
-						new GLatLng(
-							parseFloat(this.getAttribute('CacheLat')),
-							parseFloat(this.getAttribute('CacheLon')))
-						,gmap.getZoom()+3);
-					//prevent marking of text
+					map.panTo([this.getAttribute('CacheLat'), this.getAttribute('CacheLon')]);
+					map.zoomIn();
 					evt.cancelBubble = true;
 					if (evt.stopPropagation) evt.stopPropagation();
 					if (evt.preventDefault) evt.preventDefault();
@@ -446,7 +466,7 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 				//first cell contains the icon
 				var MenuTD = document.createElement('td');
 				var MenuImg = document.createElement('img');
-				MenuImg.setAttribute('src', CacheIcon.icon.image);
+				MenuImg.setAttribute('src', CacheIcon.options.iconUrl);
 				MenuTD.appendChild(MenuImg);
 				MenuTR.appendChild(MenuTD);
 				
@@ -465,17 +485,6 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 				//append row to the tbody
 				newgeocachingmenutablebody.appendChild(MenuTR);
 			}
-		}
-		
-		/******************************************************************************
-			create gmap marker and text window
-		*******************************************************************************/
-		function createMarker(point, text_marker,icon) {
-			var marker = new GMarker(point,icon);
-			GEvent.addListener(marker, "click", function() {
-				marker.openInfoWindowHtml(text_marker);
-			});
-			return marker;
 		}
 		
 		/******************************************************************************
@@ -527,58 +536,6 @@ echo '<?xml version="1.0" encoding="iso-8859-15"?>';
 			document.getElementById('geocachingmap').style.height = (newheight)+"px";
 			document.getElementById('crosshair').style.left = ((newwidth - widthLegend)/2-9)+"px";
 			document.getElementById('crosshair').style.top = "-"+(newheight/2+9)+"px";
-		}
-		
-		//needed for using page with firebug debugging
-		function gtbExternal() { };
-		
-		if (typeof(navigator.geolocation) != "undefined"){
-			var node = document.createElement("input");
-			node.type = "button";
-			node.value = "Center here";
-			node.onclick = function(evt){
-				navigator.geolocation.getCurrentPosition(GCcenterMap);
-			}
-			if (document.getElementById("idCenterMapLink") !== null){
-				document.getElementById("idCenterMapLink").appendChild(node);
-			}
-		}
-		function GCcenterMap(position){
-			var here = new GLatLng(
-					position.coords.latitude,
-					position.coords.longitude);
-			gmap.setCenter(here);
-			
-			var circlePoints = Array();
-			var bounds = new GLatLngBounds();
-			var circle;
-			var d = position.coords.accuracy/(1000*6378.8);	// radians
-			var lat1 = (Math.PI/180)* here.lat(); // radians
-			var lng1 = (Math.PI/180)* here.lng(); // radians
-			
-			for (var a = 0 ; a < 361 ; a++ ) {
-				var tc = (Math.PI/180)*a;
-				var y = Math.asin(Math.sin(lat1)*Math.cos(d)+Math.cos(lat1)*Math.sin(d)*Math.cos(tc));
-				var dlng = Math.atan2(Math.sin(tc)*Math.sin(d)*Math.cos(lat1),Math.cos(d)-Math.sin(lat1)*Math.sin(y));
-				var x = ((lng1-dlng+Math.PI) % (2*Math.PI)) - Math.PI ; // MOD function
-				var point = new GLatLng(parseFloat(y*(180/Math.PI)),parseFloat(x*(180/Math.PI)));
-				circlePoints.push(point);
-				bounds.extend(point);
-			}
-			
-			circle = new GPolygon(circlePoints, '#000000', 2, 1, '#000000', 0.15);
-			
-			gmap.addOverlay(circle);
-			
-			if (gmap.getBoundsZoomLevel(bounds) < 16){
-				gmap.setZoom(gmap.getBoundsZoomLevel(bounds));
-			}else if (gmap.getZoom() < 15 ){
-				if(window.innerWidth && window.innerWidth < 800){
-					gmap.setZoom(16);
-				}else{
-					gmap.setZoom(15);
-				}
-			}
 		}
 	/* ]]> */
 	</script>
