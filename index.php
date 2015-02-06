@@ -93,8 +93,9 @@ require('/var/www/sabineholgeraccess.php');
 			<link rel="stylesheet" href="leaflet-control-Zoomslider.ie.css" />
 		<![endif]-->
 		<script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
-		<script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script>
+<script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script>
 		<script src="leaflet.markercluster-src.js"></script>
+		<script src="leaflet-providers-0.0.2.js"></script>
 		<script src="leaflet-providers-0.0.2.js"></script>
 		<script src="leaflet-layer-google.js"></script>
 		<script src="leaflet-layer-bing.js"></script>
@@ -221,7 +222,7 @@ require('/var/www/sabineholgeraccess.php');
 			if (true) { 
 				map = L.map('geocachingmap');
 				markerGroup = new L.layerGroup();
-				markerCluster = new L.MarkerClusterGroup({maxClusterRadius:10, disableClusteringAtZoom:11, zoomToBoundsOnClick: false});
+				markerCluster = new L.MarkerClusterGroup({maxClusterRadius:30, disableClusteringAtZoom:11, zoomToBoundsOnClick: false});
 				markerNoCluster = new L.MarkerClusterGroup({disableClusteringAtZoom:1, zoomToBoundsOnClick: false});
 				
 				/******************************************************************************
@@ -279,8 +280,12 @@ require('/var/www/sabineholgeraccess.php');
 					//
 					var requestURL = Parameter_Liste.locurl;
 					xmlHttp.open('GET', requestURL, false);
+					if(xmlHttp.overrideMimeType){
+						//we can handle wrong MIME Type from the server, too.
+						xmlHttp.overrideMimeType('application/xml');
+					}
 					xmlHttp.send(null);
-					if (xmlHttp.status !== 200){
+					if (xmlHttp.status !== 200 || xmlHttp.responseXML === null){
 						var maplabel = document.getElementById("maplabel");
 						if (maplabel !== null){
 							maplabel.innerText = "could not load LOC File from: "+requestURL+" Aborting.";
@@ -301,8 +306,12 @@ require('/var/www/sabineholgeraccess.php');
 					//
 					var requestURL = Parameter_Liste.greenlocurl;
 					xmlHttp.open('GET', requestURL, false);
+					if(xmlHttp.overrideMimeType){
+						//we can handle wrong MIME Type from the server, too.
+						xmlHttp.overrideMimeType('application/xml');
+					}
 					xmlHttp.send(null);
-					if (xmlHttp.status !== 200){
+					if (xmlHttp.status !== 200 || xmlHttp.responseXML === null){
 						var maplabel = document.getElementById("maplabel");
 						if (maplabel !== null){
 							maplabel.innerText = "could not load LOC File from: "+requestURL+" Aborting.";
@@ -322,8 +331,12 @@ require('/var/www/sabineholgeraccess.php');
 				if (Parameter_Liste.locurl === undefined && Parameter_Liste.greenlocurl === undefined){
 					var requestURL = './cachedata/sabineholger-found.xml';
 					xmlHttp.open('GET', requestURL, false);
+					if(xmlHttp.overrideMimeType){
+						//we can handle wrong MIME Type from the server, too.
+						xmlHttp.overrideMimeType('application/xml');
+					}
 					xmlHttp.send(null);
-					if (xmlHttp.status !== 200){
+					if (xmlHttp.status !== 200 || xmlHttp.responseXML === null){
 						var maplabel = document.getElementById("maplabel");
 						if (maplabel !== null){
 							maplabel.innerText = "could not load LOC File from: "+requestURL+" Aborting.";
@@ -342,8 +355,12 @@ require('/var/www/sabineholgeraccess.php');
 					
 					var requestURL = './cachedata/sabineholger-hidden.xml';
 					xmlHttp.open('GET', requestURL, false);
+					if(xmlHttp.overrideMimeType){
+						//we can handle wrong MIME Type from the server, too.
+						xmlHttp.overrideMimeType('application/xml');
+					}
 					xmlHttp.send(null);
-					if (xmlHttp.status !== 200){
+					if (xmlHttp.status !== 200 || xmlHttp.responseXML === null){
 						var maplabel = document.getElementById("maplabel");
 						if (maplabel !== null){
 							maplabel.innerText = "could not load LOC File from: "+requestURL+" Aborting.";
@@ -395,19 +412,22 @@ require('/var/www/sabineholgeraccess.php');
 				var lGoogleRoad = new L.Google("ROADMAP");
 				var lGoogleHybrid = new L.Google("HYBRID");
 				var lGoogleSat = new L.Google("SATELLITE");
-				var lBing = new L.BingLayer("Anqm0F_JjIZvT0P3abS6KONpaBaKuTnITRrnYuiJCE0WOhH6ZbE4DzeT6brvKVR5");
+//				var lBing = new L.BingLayer("Anqm0F_JjIZvT0P3abS6KONpaBaKuTnITRrnYuiJCE0WOhH6ZbE4DzeT6brvKVR5");
 				
 				var lOpenPisteMap = L.tileLayer("http://tiles.openpistemap.org/nocontours/{z}/{x}/{y}.png", {attribution:'<a href="http://openpistemap.org">OpenPisteMap</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'});
-				
+				var lOpenStreetMapHOT = L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+						attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>'
+				});
 				//only add one layer to the current map
-				map.addLayer(lOpenStreetMap);
+				map.addLayer(lOpenStreetMapHOT);
 				//add layer switcher, permalink and scale to the map
 				var layers = new L.Control.Layers( {
 					'OpenStreetMap':lOpenStreetMap,
 					'Google Map':lGoogleRoad,
 					'Google Satellite':lGoogleSat,
 					'Google Hybrid':lGoogleHybrid,
-					'Bing':lBing,
+	//				'Bing':lBing,
+					'OSMHOT':lOpenStreetMapHOT,
 					'OSM.de':lOpenStreetMapDE,
 					'OpenCycleMap':lOpenCycleMap,
 					'Watercolor':lStamenWater
@@ -478,7 +498,7 @@ require('/var/www/sabineholgeraccess.php');
 				
 				//parse name and description of Cache
 				var CacheID = AllWaypoints[i].getElementsByTagName('name')[0].getAttribute('id');
-				var CacheDescription = AllWaypoints[i].getElementsByTagName('name')[0].firstChild.nodeValue;
+				var CacheDescription = AllWaypoints[i].getElementsByTagName('name')[0].textContent.trim();
 				var CacheDescriptionParts = CacheDescription.split(' by ');
 				var CacheIcon;
 				var CacheFinder = null;
@@ -638,7 +658,7 @@ require('/var/www/sabineholgeraccess.php');
 			//set new size and position of all elements
 			document.getElementById('geocachingmenu').style.width = (widthLegend)+"px";
 			document.getElementById('geocachingmenu').style.height = (newmenuheight)+"px";
-			document.getElementById('geocachingmap').style.width = (newwidth - widthLegend)+"px";
+			document.getElementById('geocachingmap').style.width = (newwidth - widthLegend - 20)+"px";
 			document.getElementById('geocachingmap').style.height = (newheight)+"px";
 			document.getElementById('crosshair').style.left = ((newwidth - widthLegend)/2-9)+"px";
 			document.getElementById('crosshair').style.top = "-"+(newheight/2+9)+"px";
