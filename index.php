@@ -8,12 +8,12 @@ require('/var/www/sabineholgeraccess.php');
 	JavaScript only implementation, inspired and API conform from GMAPLOC http://www.henning-mersch.de/projects_former
 	Loc2Map Version: 2.0.1
 	for new version visit http://www.katur.de/
-	
-	Uses the leaflet software with multiple plugins. 
+
+	Uses the leaflet software with multiple plugins.
 	js+css leaflet is used from the leaflet CDN (see http://leafletjs.com/download.html)
-	The other files are not available via CDN, you have to download the locally on your server. 
-	I have renamed a few of them, to have the directory a little bit cleaner 
-	
+	The other files are not available via CDN, you have to download the locally on your server.
+	I have renamed a few of them, to have the directory a little bit cleaner
+
 	INSTALL (all urls tested with github files from january 2013):
 		js+css from https://github.com/danzel/Leaflet.markercluster/tree/master/dist
 			download leaflet.markercluster-src.js
@@ -31,10 +31,10 @@ require('/var/www/sabineholgeraccess.php');
 		js for permalink from https://github.com/shramov/leaflet-plugins/tree/master/control
 			download and rename Permalink.js to leaflet-control-permalink.js
 		png from http://www.katur.de/geocaching/blue.png and crshair.gif, yellow.png, red.png and green.png
-	
+
 	USAGE:
-		After downloading all files into one directory, you can point the browser to 
-		the corresponding URL on your server. 
+		After downloading all files into one directory, you can point the browser to
+		the corresponding URL on your server.
 		There are a three possibilities to fill map with caches
 			- URL parameter locurl, gives red icons
 			- URL parameter greenlocurl, gives green icons
@@ -45,13 +45,13 @@ require('/var/www/sabineholgeraccess.php');
 			&height=height of Window
 			&width=width of Window
 			&widthLegend=width of the legend
-	
+
 	Copyright (c) 2013, Holger Jeromin <jeromin(at)hitnet.rwth-aachen.de>
-	
+
 	This software is distributed under a Creative Commons Attribution-Noncommercial 3.0 License
 	http://creativecommons.org/licenses/by-nc/3.0/de/
 	Other licences available on request!
-	
+
 	History:
 	--------
 	02-October-2009			V1.0.0
@@ -119,13 +119,13 @@ require('/var/www/sabineholgeraccess.php');
 		</div>
 		<div id="stats" style="display:none;">
 			<div style="float:right;padding:0;margin:0px;">
-					<a href="http://www.geocaching.com/profile/?guid=bb140a75-2eb5-414c-a888-8b9d2f714bbb">
-				<img style="border:0px;" alt="" src="http://img.groundspeak.com/stats/img.aspx?uid=bb140a75-2eb5-414c-a888-8b9d2f714bbb&amp;txt=Statistik+auf+Geocaching.com" /></a>
+					<a href="https://www.geocaching.com/seek/nearest.aspx?ul=SabineHolger">
+				<img style="border:0px;" alt="" src="https//img.geocaching.com/stats/img.aspx?uid=bb140a75-2eb5-414c-a888-8b9d2f714bbb&amp;txt=Statistik+auf+Geocaching.com" /></a>
 			</div>
 			<div id="maplabel">
-				<img alt="" src="yellow.png"/>(<span id="CountHidden">0</span>): hidden caches; 
-				found <span id="CountFoundAll">0</span> in total: 
-				<img alt="" src="red.png"/>(<span id="CountFoundSabine">0</span>): Sabine, 
+				<img alt="" src="yellow.png"/>(<span id="CountHidden">0</span>): hidden caches;
+				found <span id="CountFoundAll">0</span> in total:
+				<img alt="" src="red.png"/>(<span id="CountFoundSabine">0</span>): Sabine,
 				<img alt="" src="blue.png"/>(<span id="CountFoundHolger">0</span>): Holger,
 				<img alt="" src="green.png"/>(<span id="CountFoundBoth">0</span>): both
 				<?php if ($internview === true){ echo '(<a href="admin.php">Adminlink</a>)'; } ?>
@@ -167,15 +167,15 @@ require('/var/www/sabineholgeraccess.php');
 		paare = null;
 		wert = null;
 		wertestring = null;
-		
+
 		if (Parameter_Liste.title !== undefined){
 			document.title=Parameter_Liste.title;
 		}
-		
+
 		//make the map full screen
 		resizeElements();
 		window.onresize = function(){resizeElements();};
-		
+
 		//initialize global variables
 		markerGreenOption = null;
 		markerBlueOption = null;
@@ -183,7 +183,7 @@ require('/var/www/sabineholgeraccess.php');
 		markerYellowOption = null;
 		gmap = null;
 		AllCacheMarkers = new Array();
-		
+
 		//initialize local variables
 		var CountTR = 0;
 		var CountHidden = 0;
@@ -195,7 +195,7 @@ require('/var/www/sabineholgeraccess.php');
 		var CacheLatMax = Number.NaN;
 		var CacheLonMin = Number.NaN;
 		var CacheLonMax = Number.NaN;
-		
+
 		var markerGroup = null;
 		var markerCluster = null;
 		var markerNoCluster = null;
@@ -215,16 +215,16 @@ require('/var/www/sabineholgeraccess.php');
 		MenuTD.appendChild(MenuTDValue);
 		MenuTR.appendChild(MenuTD);
 		newgeocachingmenutablebody.appendChild(MenuTR);
-		
-		
+
+
 		//initmap() will be called from onload-event
 		function initmap() {
-			if (true) { 
+			if (true) {
 				map = L.map('geocachingmap');
 				markerGroup = new L.layerGroup();
 				markerCluster = new L.MarkerClusterGroup({maxClusterRadius:30, disableClusteringAtZoom:11, zoomToBoundsOnClick: false});
 				markerNoCluster = new L.MarkerClusterGroup({disableClusteringAtZoom:1, zoomToBoundsOnClick: false});
-				
+
 				/******************************************************************************
 					initialize four Icons
 				*******************************************************************************/
@@ -237,7 +237,7 @@ require('/var/www/sabineholgeraccess.php');
 					shadowSize: [22, 20],
 				});
 				markerGreenOption = { icon:iconGreen };
-				
+
 				iconBlue = L.icon({
 					iconUrl: 'blue.png',
 					iconSize: [12, 20],
@@ -247,7 +247,7 @@ require('/var/www/sabineholgeraccess.php');
 					shadowSize: [22, 20],
 				});
 				markerBlueOption = { icon:iconBlue };
-				
+
 				iconRed = L.icon({
 					iconUrl: 'red.png',
 					iconSize: [12, 20],
@@ -258,7 +258,7 @@ require('/var/www/sabineholgeraccess.php');
 				});
 
 				markerRedOption = { icon:iconRed };
-				
+
 				iconYellow = L.icon({
 					iconUrl: 'yellow.png',
 					iconSize: [12, 20],
@@ -268,7 +268,7 @@ require('/var/www/sabineholgeraccess.php');
 					shadowSize: [22, 20],
 					});
 				markerYellowOption = { icon:iconYellow };
-				
+
 				/******************************************************************************
 					There are a three possibilities to fill map
 						- URL parameter locurl
@@ -327,7 +327,7 @@ require('/var/www/sabineholgeraccess.php');
 					//call function to insert marker to map
 					insertWaypoints(locurlWaypoints, iconGreen);
 				}
-				
+
 				if (Parameter_Liste.locurl === undefined && Parameter_Liste.greenlocurl === undefined){
 					var requestURL = './cachedata/sabineholger-found.xml';
 					xmlHttp.open('GET', requestURL, false);
@@ -347,12 +347,12 @@ require('/var/www/sabineholgeraccess.php');
 						}
 						return false;
 					}
-					
+
 					var FoundXML=xmlHttp.responseXML.documentElement;
 					var AllWaypoints = FoundXML.getElementsByTagName('waypoint');
 					//call function to insert marker to map
 					insertWaypoints(AllWaypoints, null);
-					
+
 					var requestURL = './cachedata/sabineholger-hidden.xml';
 					xmlHttp.open('GET', requestURL, false);
 					if(xmlHttp.overrideMimeType){
@@ -375,13 +375,13 @@ require('/var/www/sabineholgeraccess.php');
 					var AllWaypointsHidden = HiddenXML.getElementsByTagName('waypoint');
 					//call function to insert marker to map
 					insertWaypoints(AllWaypointsHidden, iconYellow);
-					
+
 					//unhide stats bar
 					document.getElementById("stats").style.display = "inline";
 				}
 				//insert new Table ONCE to prevent multiple reflow/repaint in the browsers
 				geocachingmenutable.replaceChild(newgeocachingmenutablebody, geocachingmenutable.firstChild);
-				
+
 				//fill stats field beneath map
 				if(document.getElementById('CountFoundAll'))
 					document.getElementById('CountFoundAll').firstChild.nodeValue = CountFoundHolger+CountFoundSabine+CountFoundBoth;
@@ -393,7 +393,7 @@ require('/var/www/sabineholgeraccess.php');
 					document.getElementById('CountFoundBoth').firstChild.nodeValue = CountFoundBoth;
 				if(document.getElementById('CountHidden'))
 					document.getElementById('CountHidden').firstChild.nodeValue = CountHidden;
-				
+
 				//center map via url parameter or calculate center automatically
 				if (CenterCache !== null){
 					map.setView(CenterCache, 15);
@@ -413,7 +413,7 @@ require('/var/www/sabineholgeraccess.php');
 				var lGoogleHybrid = new L.Google("HYBRID");
 				var lGoogleSat = new L.Google("SATELLITE");
 //				var lBing = new L.BingLayer("Anqm0F_JjIZvT0P3abS6KONpaBaKuTnITRrnYuiJCE0WOhH6ZbE4DzeT6brvKVR5");
-				
+
 				var lOpenPisteMap = L.tileLayer("http://tiles.openpistemap.org/nocontours/{z}/{x}/{y}.png", {attribution:'<a href="http://openpistemap.org">OpenPisteMap</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'});
 				var lOpenStreetMapHOT = L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
 						attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>'
@@ -435,7 +435,7 @@ require('/var/www/sabineholgeraccess.php');
 				map.addControl(layers);
 				map.addControl(new L.Control.Permalink({text: 'Permalink', layers: layers}));
 				map.addControl(new L.control.scale({imperial:false}));
-				
+
 				document.getElementById("idClustering").onchange = function(evt){
 					if(evt.target.checked === false){
 						markerCluster.clearLayers();
@@ -466,18 +466,18 @@ require('/var/www/sabineholgeraccess.php');
 			//opera mobile v12 needs this...
 			resizeElements();
 		}
-		
+
 		/******************************************************************************
 			fill map with waypoints
 		*******************************************************************************/
 		function insertWaypoints(AllWaypoints, forceIcon){
-			for (var i = 0; i < AllWaypoints.length; i++) {
+			for (var i = AllWaypoints.length - 1; i >=0; i--) {
 				//parse position of marker
 				//
 				var CacheLat = parseFloat(AllWaypoints[i].getElementsByTagName('coord')[0].getAttribute('lat'));
 				var CacheLon = parseFloat(AllWaypoints[i].getElementsByTagName('coord')[0].getAttribute('lon'));
 				var CachePos = new L.LatLng(CacheLat,CacheLon);
-				
+
 				//maintain position of all caches to be able to autozoom later
 				if (CacheLat < CacheLatMin){
 					CacheLatMin = CacheLat;
@@ -495,14 +495,15 @@ require('/var/www/sabineholgeraccess.php');
 					CacheLonMin = CacheLon;
 					CacheLonMax = CacheLon;
 				}
-				
+
 				//parse name and description of Cache
 				var CacheID = AllWaypoints[i].getElementsByTagName('name')[0].getAttribute('id');
 				var CacheDescription = AllWaypoints[i].getElementsByTagName('name')[0].textContent.trim();
 				var CacheDescriptionParts = CacheDescription.split(' by ');
+				var CacheTime = AllWaypoints[i].getElementsByTagName('time')[0]?.textContent.substr(0, 10);
 				var CacheIcon;
 				var CacheFinder = null;
-				
+
 				//waypoints could have a tag "teamfind". Visualize it different!
 				if (AllWaypoints[i].getElementsByTagName('teamfind')[0] !== undefined && AllWaypoints[i].getElementsByTagName('teamfind')[0].firstChild.nodeValue != "both"){
 					CacheFinder = AllWaypoints[i].getElementsByTagName('teamfind')[0].firstChild.nodeValue;
@@ -529,11 +530,11 @@ require('/var/www/sabineholgeraccess.php');
 					//make the icon yellow
 					CacheIcon = iconYellow;
 				}
-				
+
 				var CacheText =	"CacheID: "+
 										"<a target='_blank' href='http://www.geocaching.com/seek/cache_details.aspx?wp="+CacheID+"'>"+
 										CacheID+"</a> ";
-				
+
 				//check if the cache name is standardconform
 				if (CacheDescriptionParts.length === 1){
 					//for example "NearbyWater"
@@ -553,29 +554,34 @@ require('/var/www/sabineholgeraccess.php');
 				if (CacheFinder !== null){
 					CacheText += "Found by "+CacheFinder+"<br />";
 				}
-				
+				if (CacheTime){
+					CacheText += "Found: "+CacheTime+"<br />";
+				}
+
 				//build marker with right info and add to the map
-				var CacheMarker = L.marker(CachePos, {icon:CacheIcon, title:CacheID+": "+CacheName});
+				var CacheMarker = L.marker(CachePos, {
+					icon: CacheIcon,
+					title: CacheID+": "+CacheName+(CacheTime?"\nFound: "+CacheTime:"")});
 				CacheMarker.bindPopup(CacheText);
 				AllCacheMarkers[CountTR] = CacheMarker;
 				markerCluster.addLayer(CacheMarker);
-				
+
 				/******************************************************************************
 					build menu item for marker
 				*******************************************************************************/
 				var MenuTR = document.createElement('tr');
-				
+
 				//save marker info in DOM for later use
 				MenuTR.setAttribute('cachelat', CacheLat);
 				MenuTR.setAttribute('cachelon', CacheLon);
 				MenuTR.setAttribute('cacheid', CacheID);
 				MenuTR.setAttribute('counttr', CountTR);
-				MenuTR.setAttribute('title', CacheName);
+				MenuTR.setAttribute('title', CacheName+(CacheTime?'\nfound: '+CacheTime:''));
 				MenuTR.style.whiteSpace = "nowrap";
 				CountTR++;
-				
+
 				//register the events for the row
-				
+
 				//onmouse over check if marker is visible and open marker if yes
 				MenuTR.onmouseover = function(evt){
 					AllCacheMarkers[this.getAttribute('counttr')].openPopup();
@@ -588,31 +594,31 @@ require('/var/www/sabineholgeraccess.php');
 					if (evt.stopPropagation) evt.stopPropagation();
 					if (evt.preventDefault) evt.preventDefault();
 				};
-				
+
 				//first cell contains the icon
 				var MenuTD = document.createElement('td');
 				var MenuImg = document.createElement('img');
 				MenuImg.setAttribute('src', CacheIcon.options.iconUrl);
 				MenuTD.appendChild(MenuImg);
 				MenuTR.appendChild(MenuTD);
-				
+
 				//second cell contains the cache ID
 				MenuTD = document.createElement('td');
 				var MenuTDValue = document.createTextNode(CacheID);
 				MenuTD.appendChild(MenuTDValue);
 				MenuTR.appendChild(MenuTD);
-				
+
 				//last cell contains the Cachename
 				MenuTD = document.createElement('td');
 				MenuTDValue = document.createTextNode(CacheName);
 				MenuTD.appendChild(MenuTDValue);
 				MenuTR.appendChild(MenuTD);
-				
+
 				//append row to the tbody
 				newgeocachingmenutablebody.appendChild(MenuTR);
 			}
 		}
-		
+
 		/******************************************************************************
 			resize map to fullsize
 				called onload and onresize
@@ -623,7 +629,7 @@ require('/var/www/sabineholgeraccess.php');
 			var newheight;
 			var newmenuheight;
 			var newwidth;
-			
+
 			//check if size is preconfigured. If not than autodetect
 			if (Parameter_Liste.height !== undefined){
 				newheight = Parameter_Liste.height;
@@ -654,7 +660,7 @@ require('/var/www/sabineholgeraccess.php');
 			}else{
 				widthLegend=200;
 			}
-			
+
 			//set new size and position of all elements
 			document.getElementById('geocachingmenu').style.width = (widthLegend)+"px";
 			document.getElementById('geocachingmenu').style.height = (newmenuheight)+"px";
