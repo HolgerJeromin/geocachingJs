@@ -557,6 +557,7 @@ require('/var/www/sabineholgeraccess.php');
 				if (CacheTime){
 					CacheText += "Found: "+CacheTime+"<br />";
 				}
+				CacheText += "<a href='https://www.openstreetmap.org/?mlat=" + CacheLat + "&mlon=" + CacheLon + "#map=17/" + CacheLat + "/" + CacheLon + "'>OpenStreetMap at this location</a>";
 
 				//build marker with right info and add to the map
 				var CacheMarker = L.marker(CachePos, {
