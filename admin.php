@@ -25,15 +25,10 @@ $requireTeamFind = "true";		//has to be a string
 		-	better explanation
 
 */
-
-echo '<?xml version="1.0" encoding="UTF-8"?>';
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-	"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 	<head>
-		<meta http-equiv="Content-Style-Type" content="text/css" />
-		<meta http-equiv="Content-Script-Type" content="text/javascript" />
 		<link type="image/x-icon" href="/favicon.ico" rel="shortcut icon" />
 		<title>loc2map Admininterface by Holger Jeromin</title>
 		<script src="admin.js" async defer></script>

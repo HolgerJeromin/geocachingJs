@@ -75,25 +75,17 @@ require('/var/www/sabineholgeraccess.php');
 */
 
 ?>
-<?xml version="1.0" encoding="iso-8859-15"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-	"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 	<head>
-		<meta http-equiv="Content-Style-Type" content="text/css" />
-		<meta http-equiv="Content-Script-Type" content="text/javascript" />
 		<meta name="viewport" content="width=device-width, height=device-height, target-densitydpi=device-dpi, initial-scale=1.0, user-scalable=no" />
 		<link type="image/x-icon" href="favicon.ico" rel="shortcut icon"/>
 		<title>loc2map by Holger Jeromin</title>
 		<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.css" />
 		<link rel="stylesheet" href="leaflet.markercluster.css" />
 		<link rel="stylesheet" href="leaflet-control-Zoomslider.css" />
-		<!--[if lte IE 8]>
-			<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.ie.css" />
-			<link rel="stylesheet" href="leaflet-control-Zoomslider.ie.css" />
-		<![endif]-->
 		<script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
-<script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script>
+		<script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script>
 		<script src="leaflet.markercluster-src.js"></script>
 		<script src="leaflet-providers-0.0.2.js"></script>
 		<script src="leaflet-providers-0.0.2.js"></script>
@@ -120,7 +112,7 @@ require('/var/www/sabineholgeraccess.php');
 		<div id="stats" style="display:none;">
 			<div style="float:right;padding:0;margin:0px;">
 					<a href="https://www.geocaching.com/seek/nearest.aspx?ul=SabineHolger">
-				<img style="border:0px;" alt="" src="https//img.geocaching.com/stats/img.aspx?uid=bb140a75-2eb5-414c-a888-8b9d2f714bbb&amp;txt=Statistik+auf+Geocaching.com" /></a>
+				<img style="border:0px;" alt="" src="https://img.geocaching.com/stats/img.aspx?uid=bb140a75-2eb5-414c-a888-8b9d2f714bbb&amp;txt=Statistik+auf+Geocaching.com" /></a>
 			</div>
 			<div id="maplabel">
 				<img alt="" src="yellow.png"/>(<span id="CountHidden">0</span>): hidden caches;
