@@ -66,6 +66,9 @@ newgeocachingmenutablebody.appendChild(MenuTR);
 
 //initmap() will be called from onload-event
 function initmap() {
+  const statsDiv = /** @type {HTMLDivElement} */ (
+    document.getElementById("stats")
+  );
   map = L.map("geocachingmap");
   markerGroup = new L.layerGroup();
   markerCluster = new L.MarkerClusterGroup({
@@ -145,7 +148,7 @@ function initmap() {
         maplabel.innerText =
           "could not load LOC File from: " + requestURL + " Aborting.";
         //unhide stats bar
-        document.getElementById("stats").style.display = "inline";
+        statsDiv.style.display = "inline";
       } else {
         alert("could not load LOC File from: " + requestURL + " Aborting.");
       }
@@ -173,7 +176,7 @@ function initmap() {
         maplabel.innerText =
           "could not load LOC File from: " + requestURL + " Aborting.";
         //unhide stats bar
-        document.getElementById("stats").style.display = "inline";
+        statsDiv.style.display = "inline";
       } else {
         alert("could not load LOC File from: " + requestURL + " Aborting.");
       }
@@ -203,7 +206,7 @@ function initmap() {
         maplabel.innerText =
           "could not load LOC File from: " + requestURL + " Aborting.";
         //unhide stats bar
-        document.getElementById("stats").style.display = "inline";
+        statsDiv.style.display = "inline";
       } else {
         alert("could not load LOC File from: " + requestURL + " Aborting.");
       }
@@ -228,7 +231,7 @@ function initmap() {
         maplabel.innerText =
           "could not load LOC File from: " + requestURL + " Aborting.";
         //unhide stats bar
-        document.getElementById("stats").style.display = "inline";
+        statsDiv.style.display = "inline";
       } else {
         alert("could not load LOC File from: " + requestURL + " Aborting.");
       }
@@ -240,29 +243,30 @@ function initmap() {
     insertWaypoints(AllWaypointsHidden, iconYellow);
 
     //unhide stats bar
-    document.getElementById("stats").style.display = "inline";
+    statsDiv.style.display = "inline";
   }
   //insert new Table ONCE to prevent multiple reflow/repaint in the browsers
-  geocachingmenutable.replaceChild(
-    newgeocachingmenutablebody,
-    geocachingmenutable.firstChild
-  );
+  geocachingmenutable?.replaceChildren(newgeocachingmenutablebody);
 
+  const countFoundAllDiv = document.getElementById("CountFoundAll");
   //fill stats field beneath map
-  if (document.getElementById("CountFoundAll"))
-    document.getElementById("CountFoundAll").firstChild.nodeValue =
-      CountFoundHolger + CountFoundSabine + CountFoundBoth;
-  if (document.getElementById("CountFoundHolger"))
-    document.getElementById("CountFoundHolger").firstChild.nodeValue =
-      CountFoundHolger;
-  if (document.getElementById("CountFoundSabine"))
-    document.getElementById("CountFoundSabine").firstChild.nodeValue =
-      CountFoundSabine;
-  if (document.getElementById("CountFoundBoth"))
-    document.getElementById("CountFoundBoth").firstChild.nodeValue =
-      CountFoundBoth;
-  if (document.getElementById("CountHidden"))
-    document.getElementById("CountHidden").firstChild.nodeValue = CountHidden;
+  if (countFoundAllDiv)
+    countFoundAllDiv.textContent = (
+      CountFoundHolger +
+      CountFoundSabine +
+      CountFoundBoth
+    ).toString();
+  const countFoundHolgerDiv = document.getElementById("CountFoundHolger");
+  if (countFoundHolgerDiv)
+    countFoundHolgerDiv.textContent = CountFoundHolger.toString();
+  const countFoundSabineDiv = document.getElementById("CountFoundSabine");
+  if (countFoundSabineDiv)
+    countFoundSabineDiv.textContent = CountFoundSabine.toString();
+  const countFoundBothDiv = document.getElementById("CountFoundBoth");
+  if (countFoundBothDiv)
+    countFoundBothDiv.textContent = CountFoundBoth.toString();
+  const countHiddenDiv = document.getElementById("CountHidden");
+  if (countHiddenDiv) countHiddenDiv.textContent = CountHidden.toString();
 
   //center map via url parameter or calculate center automatically
   if (CenterCache !== null) {
@@ -325,15 +329,19 @@ function initmap() {
   );
   map.addControl(new L.control.scale({ imperial: false }));
 
-  document.getElementById("idClustering").onchange = function (evt) {
-    if (evt.target.checked === false) {
-      markerCluster.clearLayers();
-      markerNoCluster.addLayers(AllCacheMarkers);
-    } else {
-      markerNoCluster.clearLayers();
-      markerCluster.addLayers(AllCacheMarkers);
-    }
-  };
+  const clusterCheck = /**@type {HTMLInputElement} */ (
+    document.getElementById("idClustering")
+  );
+  if (clusterCheck)
+    clusterCheck.onchange = function (evt) {
+      if (clusterCheck.checked === false) {
+        markerCluster.clearLayers();
+        markerNoCluster.addLayers(AllCacheMarkers);
+      } else {
+        markerNoCluster.clearLayers();
+        markerCluster.addLayers(AllCacheMarkers);
+      }
+    };
 
   if (typeof navigator.geolocation != "undefined") {
     var node = document.createElement("input");
@@ -345,9 +353,8 @@ function initmap() {
     map.on("locationfound", function (e) {
       L.circle(e.latlng, e.accuracy).addTo(map);
     });
-    if (document.getElementById("idCenterMapLink") !== null) {
-      document.getElementById("idCenterMapLink").appendChild(node);
-    }
+
+    document.getElementById("idCenterMapLink")?.append(node);
   }
   //opera mobile v12 needs this...
   resizeElements();
@@ -407,28 +414,19 @@ function insertWaypoints(AllWaypoints, forceIcon) {
 
     //waypoints could have a tag "teamfind". Visualize it different!
     if (
-      AllWaypoints[i].getElementsByTagName("teamfind")[0] !== undefined &&
-      AllWaypoints[i].getElementsByTagName("teamfind")[0].firstChild
-        .nodeValue != "both"
+      AllWaypoints[i].getElementsByTagName("teamfind")[0]?.firstChild
+        ?.nodeValue == "holger"
     ) {
-      CacheFinder =
-        AllWaypoints[i].getElementsByTagName("teamfind")[0].firstChild
-          .nodeValue;
-      CacheFinder =
-        CacheFinder.slice(0, 1).toUpperCase() + CacheFinder.slice(1);
-      if (
-        AllWaypoints[i].getElementsByTagName("teamfind")[0].firstChild
-          .nodeValue == "holger"
-      ) {
-        CountFoundHolger++;
-        CacheIcon = iconBlue;
-      } else if (
-        AllWaypoints[i].getElementsByTagName("teamfind")[0].firstChild
-          .nodeValue == "sabine"
-      ) {
-        CountFoundSabine++;
-        CacheIcon = iconRed;
-      }
+      CacheFinder = "Holger";
+      CountFoundHolger++;
+      CacheIcon = iconBlue;
+    } else if (
+      AllWaypoints[i].getElementsByTagName("teamfind")[0]?.firstChild
+        ?.nodeValue == "sabine"
+    ) {
+      CacheFinder = "Sabine";
+      CountFoundSabine++;
+      CacheIcon = iconRed;
     } else {
       if (forceIcon === null) {
         CountFoundBoth++;
@@ -507,7 +505,7 @@ function insertWaypoints(AllWaypoints, forceIcon) {
     /******************************************************************************
 					build menu item for marker
 				*******************************************************************************/
-    var MenuTR = document.createElement("tr");
+    let MenuTR = document.createElement("tr");
 
     //save marker info in DOM for later use
     MenuTR.setAttribute("cachelat", CacheLat + "");
@@ -525,11 +523,14 @@ function insertWaypoints(AllWaypoints, forceIcon) {
 
     //onmouse over check if marker is visible and open marker if yes
     MenuTR.onmouseover = function (evt) {
-      AllCacheMarkers[this.getAttribute("counttr")].openPopup();
+      AllCacheMarkers[MenuTR.getAttribute("counttr") ?? 0].openPopup();
     };
     //ondouble click centers and zooms to the marker
     MenuTR.ondblclick = function (evt) {
-      map.panTo([this.getAttribute("CacheLat"), this.getAttribute("CacheLon")]);
+      map.panTo([
+        MenuTR.getAttribute("CacheLat"),
+        MenuTR.getAttribute("CacheLon"),
+      ]);
       map.zoomIn();
       evt.cancelBubble = true;
       if (evt.stopPropagation) evt.stopPropagation();
@@ -586,14 +587,20 @@ function resizeElements() {
   }
 
   //set new size and position of all elements
-  document.getElementById("geocachingmenu").style.width = widthLegend + "px";
-  document.getElementById("geocachingmenu").style.height = newmenuheight + "px";
-  document.getElementById("geocachingmap").style.width =
-    newwidth - widthLegend - 20 + "px";
-  document.getElementById("geocachingmap").style.height = newheight + "px";
-  document.getElementById("crosshair").style.left =
-    (newwidth - widthLegend) / 2 - 9 + "px";
-  document.getElementById("crosshair").style.top =
-    "-" + (newheight / 2 + 9) + "px";
+  const menu = document.getElementById("geocachingmenu");
+  if (menu) {
+    menu.style.width = widthLegend + "px";
+    menu.style.height = newmenuheight + "px";
+  }
+  const map = document.getElementById("geocachingmap");
+  if (map) {
+    map.style.width = newwidth - widthLegend - 20 + "px";
+    map.style.height = newheight + "px";
+  }
+  const crossHair = document.getElementById("crosshair");
+  if (crossHair) {
+    crossHair.style.left = (newwidth - widthLegend) / 2 - 9 + "px";
+    crossHair.style.top = "-" + (newheight / 2 + 9) + "px";
+  }
 }
 initmap();
